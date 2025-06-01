@@ -1,0 +1,34 @@
+@startuml
+title Cinema Abyss Container Diagram
+
+!include https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Пользователь", "Пользователь онлайн-кинотеатра")
+System(system, "Онлайн-кинотеатр Cinema Abyss", "Система для стриминга фильмов")
+
+System_Ext(recomSystem, "Внешняя рекомендательная система", "Делает рекомендуемые подборки")
+System_Ext(cinemaSystem, "Внешние видео сервисы")
+System_Ext(paymentSystem, "Платежная система")
+
+Container(proxyService, "API Gateway", "Java", "Управляет входящим трафиком, перенаправялет запросы")
+Container(moviesService, "Управление фильмами", "Java", "Получает и хранит информацию о фильмах")
+Container(userService, "Управление пользователями", "Java", "Обрабатывает и хранит информацию о пользователях")
+Container(paymentService, "Управление платежами", "Java", "Управляет транзакциями, доступ к внешним платежным сервисам")
+Container(subscriptionService, "Управление подписками", "Java", "Управляет подписками")
+
+ContainerDb(database, "База данных", "PostgreSQL", "Хранит информацию о пользователях, фильмах, платежах, подписках")
+
+Rel(user, proxyService, "Использует", "HTTP/HTTPS")
+Rel(proxyService, moviesService, "Запрашивает информацию", "HTTP/HTTPS")
+Rel(proxyService, userService, "Запрашивает информацию", "HTTP/HTTPS")
+Rel(proxyService, subscriptionService, "Запрашивает информацию", "HTTP/HTTPS")
+Rel(subscriptionService, paymentService, "Запрашивает информацию", "HTTP/HTTPS")
+Rel(moviesService, recomSystem, "Запрашивает информацию", "RabbitMQ")
+Rel(moviesService, cinemaSystem, "Интегрируется с внешними сервисами", "HTTP/HTTPS")
+Rel(paymentService, paymentSystem, "Интегрируется с внешними сервисами", "HTTP/HTTPS")
+Rel(moviesService, database, "Читает/Записывает", "JDBC")
+Rel(userService, database, "Читает/Записывает", "JDBC")
+Rel(paymentService, database, "Читает/Записывает", "JDBC")
+Rel(subscriptionService, database, "Читает/Записывает", "JDBC")
+
+@enduml
