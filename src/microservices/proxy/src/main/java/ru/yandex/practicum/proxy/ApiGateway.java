@@ -1,12 +1,11 @@
 package ru.yandex.practicum.proxy;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api")
@@ -33,17 +32,79 @@ public class ApiGateway {
     }
 
     @GetMapping("movies")
-    public ResponseEntity<String> getMovies() {
+    public ResponseEntity<String> getMovies(@RequestParam("id") Optional<String> id) {
         String url = monolithUrl;
         if (gradualMigration && useNewService()) {
             url = moviesServiceUrl;
         }
-        return restTemplate.exchange(url + "/api/movies", HttpMethod.GET, null, String.class);
+        url = url + "/api/movies";
+        if (id.isPresent()) {
+            url = url + "?id=" + id.get();
+        }
+        return restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+    }
+
+    @PostMapping("movies")
+    public ResponseEntity<String> createMovie(@RequestBody String movieData) {
+        String url = monolithUrl;
+        if (gradualMigration && useNewService()) {
+            url = moviesServiceUrl;
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(movieData, headers);
+        return restTemplate.exchange(url + "/api/movies", HttpMethod.POST, request, String.class);
     }
 
     @GetMapping("users")
-    public ResponseEntity<String> getUsers() {
-        return restTemplate.exchange(monolithUrl + "/api/users", HttpMethod.GET, null, String.class);
+    public ResponseEntity<String> getUsers(@RequestParam("id") Optional<String> id) {
+        String url = monolithUrl + "/api/users";
+        if (id.isPresent()) {
+            url = url + "?id=" + id.get();
+        }
+        return restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+    }
+
+    @PostMapping("users")
+    public ResponseEntity<String> createUser(@RequestBody String body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(body, headers);
+        return restTemplate.exchange(monolithUrl + "/api/users", HttpMethod.POST, request, String.class);
+    }
+
+    @GetMapping("payments")
+    public ResponseEntity<String> getPayments(@RequestParam("id") Optional<String> id) {
+        String url = monolithUrl + "/api/payments";
+        if (id.isPresent()) {
+            url = url + "?id=" + id.get();
+        }
+        return restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+    }
+
+    @PostMapping("payments")
+    public ResponseEntity<String> createPayment(@RequestBody String body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(body, headers);
+        return restTemplate.exchange(monolithUrl + "/api/payments", HttpMethod.POST, request, String.class);
+    }
+
+    @GetMapping("subscriptions")
+    public ResponseEntity<String> getSubscriptions(@RequestParam("id") Optional<String> id) {
+        String url = monolithUrl + "/api/subscriptions";
+        if (id.isPresent()) {
+            url = url + "?id=" + id.get();
+        }
+        return restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+    }
+
+    @PostMapping("subscriptions")
+    public ResponseEntity<String> createSubscription(@RequestBody String body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(body, headers);
+        return restTemplate.exchange(monolithUrl + "/api/subscriptions", HttpMethod.POST, request, String.class);
     }
 
     private boolean useNewService() {
